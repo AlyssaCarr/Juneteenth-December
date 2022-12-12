@@ -1,0 +1,93 @@
+---
+title: "Juneteenth 2017"
+author: "Alyssa Carr"
+date: "`r Sys.Date()`"
+output: 
+    html_document:
+        df_print: kable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(readr)
+library(janitor)
+library(tidyverse)
+library(dplyr)
+library(gt)
+library(scales)
+```
+
+```{r}
+race_ethinicity <- read_rds("data/race_ethnicity.rds")
+```
+
+## About This Report
+This summary presents findings from a study of visitors to the 2017 Juneteenth festival
+(June 10, 2017). 2017 was the first Juneteenth celebration at the Nelson-Atkins Museum of Art. Juneteenth at the museum is an annual large-scale festival that celebrates African American culture and history. The 2017 Juneteenth Celebration was part of a city-wide observance of Juneteenth and in partnership with *JunetheenthKC*. 
+
+*JuneteenthKC* hosted it's 37th annual Juneteenth celebration on June 17, 2017 in the Historic 18th and Vine District. The festival offers a chance for visitors to attend performances, readings, watch demonstrations, and reflect on the significance of Juneteenth. 
+
+Also known as Freedom Day, Juneteenth is an abbreviation of "June nineteenth" and honors the end of enslaving people in the United States which was announced by executive order in Texas on June 19, 1865. The history of freedom and equal rights after emancipation is a long and complex one; indeed, that history is still being written today. Juneteenth recognizes this ongoing struggle while celebrating the enduring contributions of African Americans. 
+
+# Goals
+The study is part of a larger initiative to study the impact of the museum’s large-scale cultural festivals. This study and related data sets are meant to be revisited in the coming years, as we continue to examine the ways in which we can most authentically serve our evolving and expanding audiences and communities.
+
+# Methodology
+The study team administered paper surveys to visitors at three different exits during the day-long festival. Data collectors used a random selection method to recruit participants. In total, 138 visitors completed the survey. Visitors who did not attend the festival were excluded from the analysis. 
+
+# Participant Demographics
+The 2017 Juneteenth survey respondents (n=138) differed from other festival and program
+audiences we've studied in terms of age, and race/ethnicity:
+
+- Respondents skewed slightly older than other festival respondents and younger than general museum respondents, as identified in 2016-2018 exit surveys and the COVES exit survey, with a mean age of 42 (n=138)
+- Respondents were more likely to identify as African American or Black (51%) than general museum respondents as identified in the 2016-2018 exit surveys and the COVES exit survey 
+- Respondents were less likely to identify as white (33%) than general museum respondents as identified in the 2016-2018 exit surveys and the COVES exit survey
+
+## Race/Ethnicity
+
+```{r}
+race_ethnicity %>% 
+  count(race_ethnicity) %>% 
+  mutate(pct = n / 141) %>% 
+  gt() %>% 
+  fmt_percent(columns = pct,
+              decimals = 1)
+```
+
+```{r}
+percent_race <- race_ethnicity %>% 
+  count(race_ethnicity) %>% 
+  mutate(pct = n / 141)
+```
+
+```{r}
+highlight_pct_race <- race_ethnicity %>% 
+  count(race_ethnicity) %>% 
+  mutate(pct = n / 141) %>% 
+  mutate(race_ethnicity = fct_reorder(race_ethnicity, pct)) %>% 
+  mutate(pct_display = percent(pct, accuracy = 1))
+```
+
+```{r}
+race_ethnicity %>% 
+  count(race_ethnicity) %>% 
+  mutate(pct = n / 141) %>% 
+  mutate(race_ethnicity = fct_reorder(race_ethnicity, pct)) %>% 
+  mutate(pct_display = percent(pct, accuracy = 1)) %>% 
+ ggplot(aes(x = race_ethnicity,
+             y = pct,
+             group = race_ethnicity,
+             fill = race_ethnicity)) + 
+  geom_col(position = 'dodge',
+           show.legend = FALSE) +
+  coord_flip() +
+  geom_text(data = highlight_pct_race,
+            inherit.aes = TRUE,
+            aes(label = pct_display),
+            hjust = 1.2) +
+  theme_minimal() +
+  theme(axis.title = element_blank()) +
+  scale_x_discrete(expand = expansion(add = c(-1,-1)))
+```
+

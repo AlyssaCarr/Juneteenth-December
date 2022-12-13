@@ -8,7 +8,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 library(readxl)
 library(readr)
 library(janitor)
@@ -19,7 +19,33 @@ library(scales)
 ```
 
 ```{r}
-race_ethinicity <- read_rds("data/race_ethnicity.rds")
+juneteenth <- read_excel (path = "data-raw/juneteenthforr_excel.xlsx")
+```
+
+```{r}
+juneteenth <- juneteenth %>% 
+  clean_names() 
+```
+
+
+```{r}
+race_ethnicity <- juneteenth %>% 
+  pivot_longer(cols = race_a_a_or_black:missing_prefer_not_to_respond,
+               names_to = "race_ethnicity",
+               values_to = "race_values") %>% 
+  select(fid, race_ethnicity, race_values) %>% 
+  mutate(race_ethnicity = str_remove(race_ethnicity, "race_")) %>% 
+  mutate(race_ethnicity = recode(race_ethnicity, "a_a_or_black" = "African American/Black",
+                                 "american_indian_or_alaskan_native" = "Native American",
+                                 "asian" = "Asian",
+                                 "white" = "White",
+                                 "hispanic_or_latino" = "Latinx",
+                                 "native_hawaiian_or_p_i" = "Native Hawaiian",
+                                 "poc" = "BIPOC",
+                                 "indicated_other" = "Other",
+                                 "missing_prefer_not_to_respond" = "Prefer Not to Respond")) %>% 
+  na_if("No") %>% 
+  drop_na()
 ```
 
 ## About This Report
